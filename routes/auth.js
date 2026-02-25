@@ -18,7 +18,7 @@ router.get('/login', (req, res) => {
     res.sendFile('login.html', { root: './public' });
 });
 
-router.post('/api/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
     
     if (!username || !password) {
@@ -46,7 +46,7 @@ router.post('/api/login', loginLimiter, async (req, res) => {
     res.json({ success: true });
 });
 
-router.post('/api/logout', requireAuth, (req, res) => {
+router.post('/logout', requireAuth, (req, res) => {
     invalidateToken(req.user.jti);
     res.clearCookie('adminToken');
     res.json({ success: true });
