@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMK Bot — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #e63030;
+    --red-dim: #a02020;
+    --red-glow: rgba(230, 48, 48, 0.15);
+    --green: #22c55e;
+    --yellow: #f59e0b;
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #181818;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f0f0;
+    --text-dim: #666;
+    --text-muted: #333;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(230,48,48,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(230,48,48,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 16px;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
+    background: var(--bg);
+  }
+
+  .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 8px;
+    margin-bottom: 40px;
+  }
+
+  .logo-diamond {
+    width: 8px;
+    height: 8px;
+    background: var(--red);
+    transform: rotate(45deg);
+    box-shadow: 0 0 12px var(--red);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo span {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 8px;
+    margin-bottom: 8px;
+    margin-top: 24px;
+  }
+
+  .nav-section:first-of-type { margin-top: 0; }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover {
+    background: var(--bg2);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .nav-item.active {
+    background: var(--bg3);
+    color: var(--text);
+    border-color: rgba(230,48,48,0.2);
+  }
+
+  .nav-item.active .nav-icon { color: var(--red); }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 12px 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  .status-dot.offline { background: var(--red); box-shadow: 0 0 6px var(--red); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .logout-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+
+  .logout-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-glow);
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .page-title span { color: var(--red); }
+
+  .header-meta {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+  }
+
+  /* CARDS GRID */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: rgba(255,255,255,0.12); }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+
+  .card-value {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .card-value.red { color: var(--red); }
+  .card-value.green { color: var(--green); }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    margin-top: 4px;
+  }
+
+  /* SECTIONS */
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .icon { font-size: 16px; }
+
+  .section-body { padding: 24px; }
+
+  /* KILL SWITCH */
+  .kill-switch-zone {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .kill-switch-info h3 {
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .kill-switch-info p {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.5;
+    max-width: 360px;
+  }
+
+  .kill-btn {
+    background: rgba(230,48,48,0.1);
+    border: 1px solid rgba(230,48,48,0.3);
+    border-radius: 12px;
+    padding: 16px 32px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--red);
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .kill-btn:hover {
+    background: rgba(230,48,48,0.2);
+    border-color: var(--red);
+    box-shadow: 0 0 24px rgba(230,48,48,0.2);
+  }
+
+  .kill-btn.active {
+    background: var(--red);
+    color: white;
+    box-shadow: 0 0 32px rgba(230,48,48,0.4);
+  }
+
+  /* MODEL SELECT */
+  .model-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .model-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg3);
+  }
+
+  .model-card:hover {
+    border-color: rgba(255,255,255,0.15);
+  }
+
+  .model-card.selected {
+    border-color: var(--red);
+    background: rgba(230,48,48,0.05);
+  }
+
+  .model-name {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .model-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .model-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: rgba(230,48,48,0.15);
+    color: var(--red);
+    letter-spacing: 0.05em;
+    margin-top: 8px;
+  }
+
+  .model-badge.green {
+    background: rgba(34,197,94,0.1);
+    color: var(--green);
+  }
+
+  /* PROMPT EDITOR */
+  textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 160px;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  textarea:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px var(--red-glow);
+  }
+
+  /* TOKEN CHART */
+  .token-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .token-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .token-bar-label {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    width: 120px;
+    flex-shrink: 0;
+  }
+
+  .token-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .token-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--red);
+    transition: width 1s ease;
+  }
+
+  .token-bar-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+    width: 80px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* FTP */
+  .ftp-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ftp-path {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    outline: none;
+  }
+
+  .ftp-btn {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .ftp-btn:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: var(--text);
+  }
+
+  .ftp-btn.primary {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+
+  .ftp-btn.primary:hover { background: #ff3a3a; }
+
+  .ftp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .ftp-table th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0 12px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ftp-table td {
+    padding: 11px 12px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: var(--text-dim);
+  }
+
+  .ftp-table tr:hover td { background: rgba(255,255,255,0.02); color: var(--text); }
+
+  .ftp-table td:first-child {
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .file-icon { font-size: 14px; }
+
+  .ftp-action {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .ftp-action:hover { color: var(--red); background: var(--red-glow); }
+
+  /* SAVE BTN */
+  .save-btn {
+    background: var(--red);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .save-btn:hover {
+    background: #ff3a3a;
+    box-shadow: 0 0 16px rgba(230,48,48,0.3);
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text);
+    z-index: 1000;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: rgba(34,197,94,0.3); color: var(--green); }
+  .toast.error { border-color: rgba(230,48,48,0.3); color: var(--red); }
+
+  /* Confirm modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+  .modal-box {
+    background: var(--bg2);
+    border: 1px solid rgba(230,48,48,0.3);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+  }
+
+  .modal-box h3 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--red);
+    margin-bottom: 12px;
+  }
+
+  .modal-box p {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    line-height: 1.6;
+    margin-bottom: 28px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .modal-cancel {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .modal-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  .modal-confirm {
+    background: var(--red);
+    border: none;
+    border-radius: 8px;
+    padding: 11px 24px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .modal-confirm:hover { background: #ff3a3a; }
+
+  /* Animations */
+  .section {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: cardIn 0.4s forwards;
+  }
+
+  .section:nth-child(1) { animation-delay: 0.1s; }
+  .section:nth-child(2) { animation-delay: 0.15s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.25s; }
+  .section:nth-child(5) { animation-delay: 0.3s; }
+
+  .cards-grid .card {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: cardIn 0.4s forwards;
+  }
+  .cards-grid .card:nth-child(1) { animation-delay: 0.05s; }
+  .cards-grid .card:nth-child(2) { animation-delay: 0.1s; }
+  .cards-grid .card:nth-child(3) { animation-delay: 0.15s; }
+
+  @keyframes cardIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-diamond"></div>
+    <span>EMK Control</span>
+  </div>
+
+  <div class="nav-section">Genel</div>
+  <a class="nav-item active" href="#">
+    <span class="nav-icon">⚡</span> Dashboard
+  </a>
+
+  <div class="nav-section">Sistem</div>
+  <a class="nav-item" href="#kill" onclick="scrollTo('kill')">
+    <span class="nav-icon">🔴</span> Kill Switch
+  </a>
+  <a class="nav-item" href="#model" onclick="scrollTo('model')">
+    <span class="nav-icon">🤖</span> AI Modeli
+  </a>
+  <a class="nav-item" href="#prompt" onclick="scrollTo('prompt')">
+    <span class="nav-icon">📝</span> Master Prompt
+  </a>
+  <a class="nav-item" href="#tokens" onclick="scrollTo('tokens')">
+    <span class="nav-icon">📊</span> Token Kullanımı
+  </a>
+  <a class="nav-item" href="#ftp" onclick="scrollTo('ftp')">
+    <span class="nav-icon">📁</span> Dosya Yönetimi
+  </a>
+
+  <div class="sidebar-footer">
+    <div class="status-indicator">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Bot çalışıyor</span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Çıkış Yap</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="page-header">
+    <div class="page-title">Dashboard <span>/ Genel Bakış</span></div>
+    <div class="header-meta" id="currentTime"></div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="cards-grid">
+    <div class="card">
+      <div class="card-label">Toplam Mesaj</div>
+      <div class="card-value" id="totalMessages">—</div>
+      <div class="card-sub">bugün</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Token Kullanımı</div>
+      <div class="card-value" id="totalTokens">—</div>
+      <div class="card-sub">toplam</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Bot Durumu</div>
+      <div class="card-value green" id="botStatus">Aktif</div>
+      <div class="card-sub" id="uptimeText">çalışıyor</div>
+    </div>
+  </div>
+
+  <!-- KILL SWITCH -->
+  <div class="section" id="kill">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">🔴</span> Kill Switch
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="kill-switch-zone">
+        <div class="kill-switch-info">
+          <h3>Acil Durum Durdurma</h3>
+          <p>Bu düğme bota gelen tüm mesajlara yanıtı anında durdurur. Restart atmadan aktif/pasif yapılabilir.</p>
+        </div>
+        <button class="kill-btn" id="killBtn" onclick="confirmKill()">
+          ⏹ DURDUR
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI MODEL -->
+  <div class="section" id="model">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">🤖</span> AI Modeli
+      </div>
+      <button class="save-btn" onclick="saveModel()">Kaydet</button>
+    </div>
+    <div class="section-body">
+      <div class="model-grid">
+        <div class="model-card selected" onclick="selectModel(this, 'claude-haiku-4-5-20251001')">
+          <div class="model-name">Claude Haiku 4.5</div>
+          <div class="model-desc">Hızlı, verimli, günlük kullanım</div>
+          <div class="model-badge green">Önerilen</div>
+        </div>
+        <div class="model-card" onclick="selectModel(this, 'claude-sonnet-4-6')">
+          <div class="model-name">Claude Sonnet 4.6</div>
+          <div class="model-desc">Dengeli performans & kalite</div>
+          <div class="model-badge">Orta</div>
+        </div>
+        <div class="model-card" onclick="selectModel(this, 'claude-opus-4-6')">
+          <div class="model-name">Claude Opus 4.6</div>
+          <div class="model-desc">En güçlü, yüksek maliyet</div>
+          <div class="model-badge">Premium</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER PROMPT -->
+  <div class="section" id="prompt">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">📝</span> Master Prompt
+      </div>
+      <button class="save-btn" onclick="savePrompt()">Kaydet & Uygula</button>
+    </div>
+    <div class="section-body">
+      <textarea id="promptEditor" placeholder="Sistem promptunu buraya girin..." rows="8"></textarea>
+    </div>
+  </div>
+
+  <!-- TOKEN USAGE -->
+  <div class="section" id="tokens">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">📊</span> Token Kullanımı
+      </div>
+      <button class="ftp-btn" onclick="loadTokenStats()">Yenile</button>
+    </div>
+    <div class="section-body">
+      <div class="token-bars" id="tokenBars">
+        <div class="token-bar-row">
+          <div class="token-bar-label">Input Tokens</div>
+          <div class="token-bar-track"><div class="token-bar-fill" id="inputBar" style="width:0%"></div></div>
+          <div class="token-bar-val" id="inputVal">—</div>
+        </div>
+        <div class="token-bar-row">
+          <div class="token-bar-label">Output Tokens</div>
+          <div class="token-bar-track"><div class="token-bar-fill" id="outputBar" style="width:0%"></div></div>
+          <div class="token-bar-val" id="outputVal">—</div>
+        </div>
+        <div class="token-bar-row">
+          <div class="token-bar-label">Toplam</div>
+          <div class="token-bar-track"><div class="token-bar-fill" id="totalBar" style="width:100%; background:#666"></div></div>
+          <div class="token-bar-val" id="totalVal">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FTP FILE MANAGER -->
+  <div class="section" id="ftp">
+    <div class="section-header">
+      <div class="section-title">
+        <span class="icon">📁</span> Dosya Yönetimi
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="ftp-toolbar">
+        <input class="ftp-path" id="ftpPath" value="/" readonly>
+        <button class="ftp-btn" onclick="ftpNavigate('..')">↑ Üst</button>
+        <button class="ftp-btn" onclick="ftpRefresh()">Yenile</button>
+        <button class="ftp-btn primary" onclick="ftpUpload()">⬆ Yükle</button>
+        <input type="file" id="uploadInput" style="display:none" onchange="handleUpload(event)">
+      </div>
+      <table class="ftp-table">
+        <thead>
+          <tr>
+            <th>Ad</th>
+            <th>Boyut</th>
+            <th>Değiştirilme</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody id="ftpTableBody">
+          <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;font-family:'DM Mono',monospace;font-size:13px;">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- KILL SWITCH CONFIRM MODAL -->
+<div class="modal-overlay" id="killModal">
+  <div class="modal-box">
+    <h3>⚠ Emin misin?</h3>
+    <p id="killModalText">Bu işlem botu <strong>anında durduracak</strong>. Kullanıcılar mesaj gönderemeyecek. Devam etmek istiyor musun?</p>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">İptal</button>
+      <button class="modal-confirm" onclick="executeKill()">Evet, Durdur</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let botActive = true;
+  let selectedModel = 'claude-haiku-4-5-20251001';
+  let currentPath = '/';
+
+  // Time
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('currentTime').textContent =
+      now.toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Toast
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast show ${type}`;
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  // Model select
+  function selectModel(el, model) {
+    document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedModel = model;
+  }
+
+  async function saveModel() {
+    try {
+      const res = await fetch('/admin/api/model', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ model: selectedModel })
+      });
+      if (res.ok) showToast('✓ Model güncellendi');
+      else showToast('✗ Hata oluştu', 'error');
+    } catch { showToast('✗ Sunucuya bağlanılamadı', 'error'); }
+  }
+
+  // Prompt
+  async function loadPrompt() {
+    try {
+      const res = await fetch('/admin/api/prompt', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('promptEditor').value = data.prompt || '';
+      }
+    } catch {}
+  }
+
+  async function savePrompt() {
+    const prompt = document.getElementById('promptEditor').value;
+    try {
+      const res = await fetch('/admin/api/prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ prompt })
+      });
+      if (res.ok) showToast('✓ Prompt güncellendi ve uygulandı');
+      else showToast('✗ Hata oluştu', 'error');
+    } catch { showToast('✗ Sunucuya bağlanılamadı', 'error'); }
+  }
+
+  // Kill switch
+  function confirmKill() {
+    const modal = document.getElementById('killModal');
+    const text = document.getElementById('killModalText');
+    const confirmBtn = document.querySelector('.modal-confirm');
+    if (botActive) {
+      text.innerHTML = 'Bu işlem botu <strong>anında durduracak</strong>. Kullanıcılar mesaj gönderemeyecek. Devam etmek istiyor musun?';
+      confirmBtn.textContent = 'Evet, Durdur';
+    } else {
+      text.innerHTML = 'Botu yeniden <strong>aktif</strong> etmek istediğinize emin misiniz?';
+      confirmBtn.textContent = 'Evet, Başlat';
+    }
+    modal.classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('killModal').classList.remove('show');
+  }
+
+  async function executeKill() {
+    closeModal();
+    const newState = !botActive;
+    try {
+      const res = await fetch('/admin/api/kill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ active: newState })
+      });
+      if (res.ok) {
+        botActive = newState;
+        const killBtn = document.getElementById('killBtn');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const botStatus = document.getElementById('botStatus');
+
+        if (!botActive) {
+          killBtn.textContent = '▶ BAŞLAT';
+          killBtn.classList.add('active');
+          statusDot.classList.add('offline');
+          statusText.textContent = 'Bot durduruldu';
+          botStatus.textContent = 'Durduruldu';
+          botStatus.className = 'card-value red';
+          showToast('⏹ Bot durduruldu', 'error');
+        } else {
+          killBtn.textContent = '⏹ DURDUR';
+          killBtn.classList.remove('active');
+          statusDot.classList.remove('offline');
+          statusText.textContent = 'Bot çalışıyor';
+          botStatus.textContent = 'Aktif';
+          botStatus.className = 'card-value green';
+          showToast('▶ Bot başlatıldı');
+        }
+      }
+    } catch { showToast('✗ Hata oluştu', 'error'); }
+  }
+
+  // Token stats
+  async function loadTokenStats() {
+    try {
+      const res = await fetch('/admin/api/stats', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('totalMessages').textContent = (data.todayMessages || 0).toLocaleString();
+        document.getElementById('totalTokens').textContent = (data.totalTokens || 0).toLocaleString();
+        document.getElementById('inputVal').textContent = (data.inputTokens || 0).toLocaleString();
+        document.getElementById('outputVal').textContent = (data.outputTokens || 0).toLocaleString();
+        document.getElementById('totalVal').textContent = (data.totalTokens || 0).toLocaleString();
+
+        const total = data.totalTokens || 1;
+        document.getElementById('inputBar').style.width = Math.round((data.inputTokens/total)*100) + '%';
+        document.getElementById('outputBar').style.width = Math.round((data.outputTokens/total)*100) + '%';
+      }
+    } catch {}
+  }
+
+  // FTP
+  async function ftpRefresh() {
+    await loadFtpDir(currentPath);
+  }
+
+  async function ftpNavigate(path) {
+    if (path === '..') {
+      const parts = currentPath.split('/').filter(Boolean);
+      parts.pop();
+      currentPath = '/' + parts.join('/');
+    } else {
+      currentPath = path;
+    }
+    document.getElementById('ftpPath').value = currentPath;
+    await loadFtpDir(currentPath);
+  }
+
+  async function loadFtpDir(path) {
+    const tbody = document.getElementById('ftpTableBody');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;font-family:\'DM Mono\',monospace;font-size:13px;">Yükleniyor...</td></tr>';
+    try {
+      const res = await fetch(`/admin/api/ftp/list?path=${encodeURIComponent(path)}`, { credentials: 'include' });
+      if (res.ok) {
+        const files = await res.json();
+        renderFtpTable(files);
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--red);padding:24px;font-family:\'DM Mono\',monospace;font-size:13px;">Erişim hatası</td></tr>';
+      }
+    } catch {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;font-family:\'DM Mono\',monospace;font-size:13px;">Bağlantı kurulamadı</td></tr>';
+    }
+  }
+
+  function renderFtpTable(files) {
+    const tbody = document.getElementById('ftpTableBody');
+    if (!files.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:24px;font-family:\'DM Mono\',monospace;font-size:13px;">Klasör boş</td></tr>';
+      return;
+    }
+    tbody.innerHTML = files.map(f => `
+      <tr>
+        <td>
+          <span class="file-icon">${f.type === 'dir' ? '📂' : '📄'}</span>
+          ${f.type === 'dir'
+            ? `<span style="cursor:pointer;color:var(--text)" onclick="ftpNavigate('${f.path}')">${f.name}</span>`
+            : f.name}
+        </td>
+        <td>${f.size || '—'}</td>
+        <td>${f.modified || '—'}</td>
+        <td>
+          ${f.type !== 'dir' ? `<button class="ftp-action" onclick="ftpDownload('${f.path}')">İndir</button>` : ''}
+          <button class="ftp-action" onclick="ftpDelete('${f.path}', '${f.name}')">Sil</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function ftpUpload() { document.getElementById('uploadInput').click(); }
+
+  async function handleUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('path', currentPath);
+    try {
+      const res = await fetch('/admin/api/ftp/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+      if (res.ok) { showToast('✓ Dosya yüklendi'); ftpRefresh(); }
+      else showToast('✗ Yükleme hatası', 'error');
+    } catch { showToast('✗ Hata oluştu', 'error'); }
+    event.target.value = '';
+  }
+
+  async function ftpDownload(path) {
+    window.location.href = `/admin/api/ftp/download?path=${encodeURIComponent(path)}`;
+  }
+
+  async function ftpDelete(path, name) {
+    if (!confirm(`"${name}" silinecek. Emin misin?`)) return;
+    try {
+      const res = await fetch('/admin/api/ftp/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ path })
+      });
+      if (res.ok) { showToast('✓ Dosya silindi'); ftpRefresh(); }
+      else showToast('✗ Silme hatası', 'error');
+    } catch { showToast('✗ Hata oluştu', 'error'); }
+  }
+
+  async function logout() {
+    await fetch('/admin/logout', { method: 'POST', credentials: 'include' });
+    window.location.href = '/admin/login';
+  }
+
+  // Init
+  async function init() {
+    await loadPrompt();
+    await loadTokenStats();
+    await loadFtpDir('/');
+
+    // Load current bot state
+    try {
+      const res = await fetch('/admin/api/status', { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        botActive = data.active;
+        selectedModel = data.model || selectedModel;
+
+        if (!botActive) {
+          document.getElementById('killBtn').textContent = '▶ BAŞLAT';
+          document.getElementById('killBtn').classList.add('active');
+          document.getElementById('statusDot').classList.add('offline');
+          document.getElementById('statusText').textContent = 'Bot durduruldu';
+          document.getElementById('botStatus').textContent = 'Durduruldu';
+          document.getElementById('botStatus').className = 'card-value red';
+        }
+
+        // Set selected model card
+        document.querySelectorAll('.model-card').forEach(c => {
+          if (c.getAttribute('onclick')?.includes(selectedModel)) {
+            c.classList.add('selected');
+          } else {
+            c.classList.remove('selected');
+          }
+        });
+      }
+    } catch {}
+  }
+
+  init();
+</script>
+</body>
+</html>
