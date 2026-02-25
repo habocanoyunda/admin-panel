@@ -844,7 +844,7 @@ document.getElementById('killBtn').addEventListener('click',async()=>{
 
 // ── Logout ───────────────────────────────────────────────
 document.getElementById('logoutBtn').addEventListener('click',async()=>{
-  await fetch('/api/logout',{method:'POST',credentials:'same-origin'});
+  await fetch('/logout',{method:'POST',credentials:'same-origin'});
   location.href='/login';
 });
 
