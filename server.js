@@ -10,18 +10,20 @@ const { WebSocketServer } = require('ws');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-app.set('trust proxy', 1);
 const server = http.createServer(app);
+
+// Trust Railway's reverse proxy
+app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-hashes'", "https://cdnjs.cloudflare.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
             fontSrc: ["'self'", "https://fonts.gstatic.com"],
-            connectSrc: ["'self'", "wss:", "ws:", "ws://localhost:3001"],
+            connectSrc: ["'self'", "wss:", "ws:"],
             imgSrc: ["'self'", "data:"]
         }
     }
