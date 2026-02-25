@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMK Admin — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --red:#E53935;--red2:rgba(229,57,53,0.12);--red3:rgba(229,57,53,0.25);
+  --bg:#080808;--bg2:#0D0D0D;--bg3:#131313;--bg4:#191919;--bg5:#1F1F1F;
+  --border:#1C1C1C;--border2:#242424;
+  --text:#EFEFEF;--muted:#3A3A3A;--muted2:#666;--muted3:#999;
+  --green:#4CAF50;--yellow:#FFA726;--blue:#42A5F5;
+  --sidebar:220px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden;}
+body{display:flex;}
+
+/* Sidebar */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:0;overflow:hidden;
+}
+.sidebar-top{
+  padding:20px 16px 16px;border-bottom:1px solid var(--border);
+}
+.s-logo{
+  display:flex;align-items:center;gap:10px;margin-bottom:0;
+}
+.s-logo-mark{
+  width:26px;height:26px;position:relative;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.s-logo-mark::before{
+  content:'';position:absolute;inset:0;
+  border:1px solid var(--red);transform:rotate(45deg);border-radius:2px;
+}
+.s-logo-mark::after{
+  content:'';position:absolute;
+  width:7px;height:7px;background:var(--red);
+  border-radius:1px;transform:rotate(45deg);
+}
+.s-logo-text{font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;opacity:0.9;}
+
+.nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.nav-group{margin-bottom:4px;}
+.nav-label{
+  font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--muted2);padding:10px 10px 6px;font-weight:500;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:9px;
+  width:100%;padding:8px 10px;border-radius:7px;
+  background:none;border:none;color:var(--muted3);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:400;
+  cursor:pointer;transition:all 0.15s;text-align:left;
+}
+.nav-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;flex-shrink:0;transition:stroke 0.15s;}
+.nav-btn:hover{background:var(--bg3);color:var(--text);}
+.nav-btn.active{background:var(--red2);color:var(--red);border:1px solid var(--red3);}
+.nav-btn.danger{color:#EF9A9A;}
+.nav-btn.danger:hover{background:rgba(229,57,53,0.08);color:var(--red);}
+
+.sidebar-bot{padding:10px 8px 16px;}
+.bot-status{
+  padding:10px 12px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:8px;margin-bottom:8px;
+}
+.bs-row{display:flex;align-items:center;justify-content:space-between;}
+.bs-label{font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;}
+.bs-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);
+  animation:pulse 2s ease infinite;
+}
+.bs-dot.off{background:var(--muted2);box-shadow:none;animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.bs-model{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--muted2);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.logout-btn{
+  display:flex;align-items:center;gap:8px;width:100%;
+  padding:8px 10px;border-radius:7px;background:none;
+  border:1px solid var(--border2);color:var(--muted3);
+  font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;
+  transition:all 0.15s;
+}
+.logout-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;}
+.logout-btn:hover{border-color:var(--red3);color:var(--red);background:var(--red2);}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{
+  height:52px;flex-shrink:0;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.topbar-title{font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.pill{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:20px;
+  font-size:11px;color:var(--muted3);
+  font-family:'JetBrains Mono',monospace;
+}
+.pill b{color:var(--text);font-weight:500;}
+
+.content{flex:1;overflow-y:auto;padding:20px 24px;}
+.section{display:none;}
+.section.active{
+  display:block;
+  animation:fadeSection 0.25s ease both;
+}
+@keyframes fadeSection{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* Grid layouts */
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+
+/* Cards */
+.card{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:18px;
+}
+.card-title{
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted2);font-weight:500;margin-bottom:14px;
+}
+
+/* Stat cards */
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:18px;
+  position:relative;overflow:hidden;transition:border-color 0.2s;
+}
+.stat-card:hover{border-color:var(--border2);}
+.stat-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+  opacity:0;transition:opacity 0.3s;
+}
+.stat-card:hover::after{opacity:0.5;}
+.stat-val{
+  font-family:'DM Serif Display',serif;
+  font-size:32px;font-weight:400;line-height:1;
+  margin-bottom:6px;
+  transition:all 0.3s;
+}
+.stat-label{font-size:11px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;}
+.stat-change{
+  font-size:11px;margin-top:8px;
+  display:flex;align-items:center;gap:4px;
+}
+.stat-change.up{color:var(--green);}
+.stat-change.neutral{color:var(--muted2);}
+
+/* Chart */
+.chart-wrap{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:18px;margin-bottom:14px;
+}
+.chart-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.chart-canvas{height:200px;position:relative;}
+
+/* Model cards */
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.model-card{
+  border:1px solid var(--border2);border-radius:9px;
+  padding:14px 16px;cursor:pointer;
+  background:var(--bg4);transition:all 0.15s;position:relative;overflow:hidden;
+}
+.model-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--red),#FF5252);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform 0.2s;
+}
+.model-card:hover::before{transform:scaleX(1);}
+.model-card:hover{border-color:var(--border2);background:var(--bg5);}
+.model-card.selected{border-color:var(--red3);background:var(--red2);}
+.model-card.selected::before{transform:scaleX(1);}
+.model-tag{
+  display:inline-flex;align-items:center;
+  padding:2px 8px;border-radius:4px;
+  font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  margin-bottom:10px;
+}
+.model-tag.fast{background:rgba(76,175,80,0.1);color:var(--green);}
+.model-tag.balanced{background:rgba(255,167,38,0.1);color:var(--yellow);}
+.model-tag.powerful{background:rgba(66,165,245,0.1);color:var(--blue);}
+.model-name{font-size:13px;font-weight:500;margin-bottom:3px;}
+.model-desc{font-size:11px;color:var(--muted2);}
+
+/* Prompt editor */
+.prompt-textarea{
+  width:100%;background:var(--bg4);
+  border:1px solid var(--border2);border-radius:8px;
+  padding:14px 16px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  line-height:1.7;resize:vertical;min-height:220px;
+  outline:none;transition:border-color 0.2s;
+}
+.prompt-textarea:focus{border-color:rgba(229,57,53,0.4);box-shadow:0 0 0 3px rgba(229,57,53,0.05);}
+
+.btn-primary{
+  padding:9px 20px;background:var(--red);
+  border:none;border-radius:7px;color:#fff;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;
+  cursor:pointer;transition:all 0.15s;
+}
+.btn-primary:hover{background:#C62828;box-shadow:0 3px 14px rgba(229,57,53,0.3);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
+
+.btn-secondary{
+  padding:9px 16px;background:none;
+  border:1px solid var(--border2);border-radius:7px;color:var(--muted3);
+  font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all 0.15s;
+}
+.btn-secondary:hover{border-color:var(--border2);color:var(--text);background:var(--bg4);}
+
+.actions{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.action-hint{font-size:11px;color:var(--muted2);}
+
+/* FTP */
+.ftp-wrap{
+  display:grid;grid-template-columns:240px 1fr;gap:12px;
+  height:calc(100vh - 148px);
+}
+.file-tree{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;overflow:hidden;display:flex;flex-direction:column;
+}
+.tree-header{
+  padding:10px 14px;border-bottom:1px solid var(--border2);
+  font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted2);font-weight:500;
+}
+.tree-body{flex:1;overflow-y:auto;padding:6px;}
+.tree-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;border-radius:6px;
+  font-size:12px;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;transition:background 0.1s;color:var(--muted3);
+}
+.tree-item:hover{background:var(--bg4);color:var(--text);}
+.tree-item.active{background:var(--red2);color:var(--red);}
+.tree-item svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.file-editor{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;display:flex;flex-direction:column;overflow:hidden;
+}
+.editor-bar{
+  padding:10px 16px;border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.editor-path{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2);}
+.editor-body{flex:1;padding:10px;}
+.editor-body textarea{
+  width:100%;height:100%;
+  background:var(--bg4);border:1px solid var(--border2);border-radius:7px;
+  padding:12px 14px;color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;
+  resize:none;outline:none;transition:border-color 0.2s;
+}
+.editor-body textarea:focus{border-color:rgba(229,57,53,0.35);}
+.editor-footer{
+  padding:10px 16px;border-top:1px solid var(--border2);
+  display:flex;align-items:center;gap:8px;
+}
+
+/* Chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 148px);}
+.chat-msgs{
+  flex:1;overflow-y:auto;padding:16px;
+  display:flex;flex-direction:column;gap:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px 10px 0 0;
+}
+.msg{display:flex;gap:10px;}
+.msg.user{flex-direction:row-reverse;}
+.msg.user{align-self:flex-end;}
+.msg-av{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;flex-shrink:0;margin-top:2px;letter-spacing:0.5px;
+}
+.msg.user .msg-av{background:var(--red);color:#fff;}
+.msg.ai .msg-av{background:var(--bg5);border:1px solid var(--border2);color:var(--muted2);}
+.msg-text{
+  max-width:75%;padding:10px 14px;border-radius:9px;
+  font-size:13px;line-height:1.5;
+}
+.msg.user .msg-text{background:var(--red);color:#fff;border-radius:9px 2px 9px 9px;}
+.msg.ai .msg-text{background:var(--bg4);border:1px solid var(--border2);border-radius:2px 9px 9px 9px;}
+.typing-msg{display:none;}
+.typing-msg.show{display:flex;}
+.typing-dots{display:flex;gap:4px;padding:12px 14px;}
+.typing-dots span{
+  width:5px;height:5px;background:var(--muted2);border-radius:50%;
+  animation:tdot 1.2s infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:0.2s;}
+.typing-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes tdot{0%,80%,100%{transform:scale(0.6);opacity:0.4}40%{transform:scale(1);opacity:1}}
+.chat-bar{
+  display:flex;gap:8px;padding:10px;
+  background:var(--bg3);border:1px solid var(--border2);border-top:none;
+  border-radius:0 0 10px 10px;
+}
+.chat-input{
+  flex:1;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:7px;padding:9px 13px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;
+  outline:none;resize:none;line-height:1.4;
+  transition:border-color 0.2s;
+}
+.chat-input:focus{border-color:rgba(229,57,53,0.35);}
+.chat-send-btn{
+  padding:9px 18px;background:var(--red);border:none;
+  border-radius:7px;color:#fff;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:13px;
+  cursor:pointer;transition:background 0.15s;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;
+}
+.chat-send-btn:hover{background:#C62828;}
+.chat-send-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.5;}
+
+/* Kill */
+.kill-card{
+  border:1px solid rgba(229,57,53,0.2);
+  border-radius:10px;padding:28px;
+  background:rgba(229,57,53,0.03);
+}
+.kill-header{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;}
+.kill-info h3{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;font-weight:400;margin-bottom:8px;
+}
+.kill-info p{font-size:13px;color:var(--muted3);line-height:1.6;max-width:440px;}
+.kill-btn{
+  padding:13px 28px;background:var(--red);
+  border:none;border-radius:8px;color:#fff;
+  font-family:'DM Sans',sans-serif;font-weight:600;font-size:14px;
+  cursor:pointer;letter-spacing:0.3px;
+  transition:all 0.15s;white-space:nowrap;flex-shrink:0;
+  position:relative;overflow:hidden;
+}
+.kill-btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(255,255,255,0.06),transparent);
+}
+.kill-btn:hover{background:#B71C1C;box-shadow:0 6px 24px rgba(229,57,53,0.4);}
+.kill-btn:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:20px;right:20px;
+  padding:11px 18px;border-radius:8px;
+  font-size:12px;font-weight:500;
+  opacity:0;transform:translateY(6px);
+  transition:all 0.2s;pointer-events:none;z-index:999;
+  display:flex;align-items:center;gap:8px;
+}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.success{background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.25);color:#81C784;}
+.toast.error{background:var(--red2);border:1px solid var(--red3);color:#EF9A9A;}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px;}
+</style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-top">
+    <div class="s-logo">
+      <div class="s-logo-mark"></div>
+      <span class="s-logo-text">EMK Admin</span>
+    </div>
+  </div>
+  <div class="nav">
+    <div class="nav-group">
+      <div class="nav-label">Genel</div>
+      <button class="nav-btn active" data-s="overview">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Genel Bakış
+      </button>
+      <button class="nav-btn" data-s="tokens">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Token İstatistikleri
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Bot Ayarları</div>
+      <button class="nav-btn" data-s="model">
+        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        AI Modeli
+      </button>
+      <button class="nav-btn" data-s="prompt">
+        <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Master Prompt
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Araçlar</div>
+      <button class="nav-btn" data-s="ftp">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Dosya Yöneticisi
+      </button>
+      <button class="nav-btn" data-s="chat">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Chat
+      </button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Sistem</div>
+      <button class="nav-btn danger" data-s="kill">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Kill Switch
+      </button>
+    </div>
+  </div>
+  <div class="sidebar-bot">
+    <div class="bot-status">
+      <div class="bs-row">
+        <span class="bs-label">Bot</span>
+        <div class="bs-dot" id="bsDot"></div>
+      </div>
+      <div class="bs-model" id="bsModel">—</div>
+    </div>
+    <button class="logout-btn" id="logoutBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Çıkış Yap
+    </button>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">Genel Bakış</div>
+    <div class="topbar-right">
+      <div class="pill">Toplam Token <b id="pillToken">—</b></div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="s-overview">
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-val" id="ov-input">—</div>
+          <div class="stat-label">Input Token</div>
+          <div class="stat-change neutral" id="ov-input-sub">Bu oturum</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="ov-output">—</div>
+          <div class="stat-label">Output Token</div>
+          <div class="stat-change neutral">Bu oturum</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="ov-total">—</div>
+          <div class="stat-label">Toplam Token</div>
+          <div class="stat-change up">↑ Aktif</div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Aktif Model</div>
+          <div style="font-size:14px;font-weight:500" id="ov-model">—</div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:4px">Anthropic Claude</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Bot Durumu</div>
+          <div style="font-size:14px;font-weight:500;color:var(--green)" id="ov-status">—</div>
+          <div style="font-size:11px;color:var(--muted2);margin-top:4px">Railway deployment</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="card-title" style="margin:0">Token Dağılımı</div>
+        </div>
+        <div class="chart-canvas"><canvas id="tokenDonut"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TOKENS -->
+    <div class="section" id="s-tokens">
+      <div class="grid-3">
+        <div class="stat-card">
+          <div class="stat-val" id="tk-input">—</div>
+          <div class="stat-label">Toplam Input Token</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="tk-output">—</div>
+          <div class="stat-label">Toplam Output Token</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="tk-cost" style="color:var(--green)">—</div>
+          <div class="stat-label">Toplam Maliyet (USD)</div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="card-title" style="margin:0">Son 30 Gün — Günlük Token Kullanımı</div>
+          <div style="display:flex;gap:12px;font-size:11px;color:var(--muted2)">
+            <span style="color:rgba(229,57,53,0.8)">■ Input</span>
+            <span style="color:rgba(66,165,245,0.8)">■ Output</span>
+          </div>
+        </div>
+        <div style="height:220px;position:relative"><canvas id="lineChart"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <div class="card-title" style="margin:0">Son 30 Gün — Günlük Maliyet (USD)</div>
+        </div>
+        <div style="height:180px;position:relative"><canvas id="costChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- MODEL -->
+    <div class="section" id="s-model">
+      <div class="card">
+        <div class="card-title">Model Seç</div>
+        <div class="model-grid" id="modelGrid"></div>
+        <div class="actions">
+          <button class="btn-primary" id="saveModelBtn">Modeli Kaydet</button>
+          <span class="action-hint">Aktif konuşmalar etkilenmez</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROMPT -->
+    <div class="section" id="s-prompt">
+      <div class="card">
+        <div class="card-title">Master System Prompt</div>
+        <textarea class="prompt-textarea" id="promptTA" placeholder="Bot sistem promptunu buraya yazın..."></textarea>
+        <div class="actions">
+          <button class="btn-primary" id="savePromptBtn">Kaydet</button>
+          <button class="btn-secondary" id="resetPromptBtn">Sıfırla</button>
+          <span class="action-hint">Restart gerekmez</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FTP -->
+    <div class="section" id="s-ftp">
+      <div class="ftp-wrap">
+        <div class="file-tree">
+          <div class="tree-header">Dosya Gezgini</div>
+          <div class="tree-body" id="treeBody"></div>
+        </div>
+        <div class="file-editor">
+          <div class="editor-bar">
+            <span class="editor-path" id="edPath">Dosya seçilmedi</span>
+          </div>
+          <div class="editor-body">
+            <textarea id="edContent" placeholder="Bir dosya seçin..."></textarea>
+          </div>
+          <div class="editor-footer">
+            <button class="btn-primary" id="saveFileBtn" disabled>Kaydet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="section" id="s-chat">
+      <div class="chat-wrap">
+        <div class="chat-msgs" id="chatMsgs">
+          <div class="msg ai">
+            <div class="msg-av">AI</div>
+            <div class="msg-text">Merhaba! EMK Admin panelinin AI asistanıyım. Ne öğrenmek istersiniz?</div>
+          </div>
+          <div class="msg typing-msg" id="typingIndicator">
+            <div class="msg-av">AI</div>
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="chat-bar">
+          <textarea class="chat-input" id="chatInput" placeholder="Mesaj yazın... (Enter: gönder, Shift+Enter: satır)" rows="1"></textarea>
+          <button class="chat-send-btn" id="chatSendBtn">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Gönder
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- KILL -->
+    <div class="section" id="s-kill">
+      <div class="kill-card">
+        <div class="kill-header">
+          <div class="kill-info">
+            <h3>Acil Durum Kill Switch</h3>
+            <p>Bu butona basıldığında bot anında durdurulur, tüm aktif oturumlar sonlandırılır ve sunucu kapatılır. İşlem geri alınamaz — yeniden başlatmak için manuel müdahale gerekir.</p>
+          </div>
+          <button class="kill-btn" id="killBtn">DURDUR</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ────────────────────────────────────────────────
+let state={};
+let selModel=null;
+let ws=null;
+let curFile=null;
+let origPrompt='';
+
+const MODELS=[
+  {id:'claude-haiku-4-5-20251001',name:'Claude Haiku 4.5',tag:'fast',tagLabel:'Hızlı',desc:'Düşük gecikme, ekonomik'},
+  {id:'claude-sonnet-4-6',name:'Claude Sonnet 4.6',tag:'balanced',tagLabel:'Dengeli',desc:'Hız ve kalite dengesi'},
+  {id:'claude-opus-4-6',name:'Claude Opus 4.6',tag:'powerful',tagLabel:'Güçlü',desc:'En yüksek kalite'}
+];
+
+// ── Nav ──────────────────────────────────────────────────
+const TITLES={overview:'Genel Bakış',tokens:'Token İstatistikleri',model:'AI Modeli',prompt:'Master Prompt',ftp:'Dosya Yöneticisi',chat:'AI Chat',kill:'Kill Switch'};
+document.querySelectorAll('.nav-btn[data-s]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    const s=btn.dataset.s;
+    document.getElementById('s-'+s).classList.add('active');
+    document.getElementById('topbarTitle').textContent=TITLES[s]||'';
+    if(s==='ftp') loadFiles();
+    if(s==='overview') renderCharts();
+    if(s==='tokens') renderTokenCharts();
+    if(s==='model') renderModels();
+  });
+});
+
+// ── Init ─────────────────────────────────────────────────
+async function init(){
+  await loadState();
+  connectWS();
+}
+
+async function loadState(){
+  try{
+    const r=await fetch('/api/state',{credentials:'same-origin'});
+    if(r.status===401){location.href='/login';return;}
+    state=await r.json();
+    selModel=state.model;
+
+    // Sidebar
+    document.getElementById('bsModel').textContent=state.model;
+    document.getElementById('bsDot').className='bs-dot'+(state.isRunning?'':' off');
+
+    // Overview
+    const t=state.totalTokens||{};
+    const inp=t.input||0,out=t.output||0,tot=inp+out;
+    document.getElementById('pillToken').textContent=fmt(tot);
+    document.getElementById('ov-input').textContent=fmt(inp);
+    document.getElementById('ov-output').textContent=fmt(out);
+    document.getElementById('ov-total').textContent=fmt(tot);
+    document.getElementById('ov-model').textContent=state.model;
+    document.getElementById('ov-status').textContent=state.isRunning?'● Çalışıyor':'● Durduruldu';
+    if(!state.isRunning) document.getElementById('ov-status').style.color='var(--muted2)';
+
+    // Tokens page
+    document.getElementById('tk-input').textContent=fmt(inp);
+    document.getElementById('tk-output').textContent=fmt(out);
+    document.getElementById('tk-total').textContent=fmt(tot);
+
+    // Prompt
+    origPrompt=state.masterPrompt||'';
+    document.getElementById('promptTA').value=origPrompt;
+
+    renderModels();
+    renderCharts();
+  }catch(e){console.error(e);}
+}
+
+function fmt(n){
+  if(n>=1e6)return(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return n.toString();
+}
+
+// ── Charts ───────────────────────────────────────────────
+Chart.defaults.color='#555';
+Chart.defaults.borderColor='rgba(255,255,255,0.04)';
+let lineChart=null,costChart=null,donutChart=null;
+
+function renderCharts(){
+  const t=state.totalTokens||{};
+  const inp=t.input||0,out=t.output||0;
+
+  // Overview donut
+  const dc=document.getElementById('tokenDonut');
+  if(dc){
+    if(donutChart)donutChart.destroy();
+    donutChart=new Chart(dc,{
+      type:'doughnut',
+      data:{
+        labels:['Input','Output'],
+        datasets:[{data:[inp,out],
+          backgroundColor:['rgba(229,57,53,0.65)','rgba(66,165,245,0.65)'],
+          borderColor:['rgba(229,57,53,0.9)','rgba(66,165,245,0.9)'],
+          borderWidth:1,hoverOffset:4}]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,cutout:'72%',
+        plugins:{
+          legend:{position:'right',labels:{color:'#888',font:{family:'DM Sans',size:12},padding:16,boxWidth:10}},
+          tooltip:{backgroundColor:'#111',borderColor:'#222',borderWidth:1,titleColor:'#eee',bodyColor:'#999',padding:10}
+        },
+        animation:{animateRotate:true,duration:800,easing:'easeOutQuart'}
+      }
+    });
+  }
+}
+
+async function renderTokenCharts(){
+  try{
+    const r=await fetch('/api/token-stats',{credentials:'same-origin'});
+    const stats=await r.json();
+
+    // Stat cards güncelle
+    document.getElementById('tk-input').textContent=fmt(stats.total.input||0);
+    document.getElementById('tk-output').textContent=fmt(stats.total.output||0);
+    document.getElementById('tk-cost').textContent='$'+(stats.total.cost||0).toFixed(4);
+
+    const labels=stats.days.map(d=>d.date.slice(5)); // MM-DD
+    const inputData=stats.days.map(d=>d.input);
+    const outputData=stats.days.map(d=>d.output);
+    const costData=stats.days.map(d=>+(d.cost||0).toFixed(6));
+
+    const commonOpts={
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#111',borderColor:'#222',borderWidth:1,titleColor:'#eee',bodyColor:'#999',padding:10,mode:'index',intersect:false}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#444',font:{size:10},maxTicksLimit:10}},
+        y:{grid:{color:'rgba(255,255,255,0.03)'},ticks:{color:'#444',font:{size:10}}}
+      },
+      interaction:{mode:'index',intersect:false},
+      animation:{duration:600,easing:'easeOutQuart'}
+    };
+
+    // Line chart
+    const lc=document.getElementById('lineChart');
+    if(lc){
+      if(lineChart)lineChart.destroy();
+      lineChart=new Chart(lc,{
+        type:'line',
+        data:{
+          labels,
+          datasets:[
+            {label:'Input',data:inputData,
+              borderColor:'rgba(229,57,53,0.8)',backgroundColor:'rgba(229,57,53,0.06)',
+              borderWidth:1.5,pointRadius:3,pointHoverRadius:5,
+              pointBackgroundColor:'rgba(229,57,53,0.9)',fill:true,tension:0.3},
+            {label:'Output',data:outputData,
+              borderColor:'rgba(66,165,245,0.8)',backgroundColor:'rgba(66,165,245,0.06)',
+              borderWidth:1.5,pointRadius:3,pointHoverRadius:5,
+              pointBackgroundColor:'rgba(66,165,245,0.9)',fill:true,tension:0.3}
+          ]
+        },
+        options:{...commonOpts,plugins:{...commonOpts.plugins,legend:{display:true,position:'top',labels:{color:'#666',font:{family:'DM Sans',size:11},boxWidth:10,padding:12}}}}
+      });
+    }
+
+    // Cost chart
+    const cc=document.getElementById('costChart');
+    if(cc){
+      if(costChart)costChart.destroy();
+      costChart=new Chart(cc,{
+        type:'bar',
+        data:{
+          labels,
+          datasets:[{label:'Maliyet ($)',data:costData,
+            backgroundColor:'rgba(76,175,80,0.4)',borderColor:'rgba(76,175,80,0.7)',
+            borderWidth:1,borderRadius:3}]
+        },
+        options:{...commonOpts}
+      });
+    }
+  }catch(e){console.error('Token stats error:',e);}
+}
+
+// ── Models ───────────────────────────────────────────────
+function renderModels(){
+  const grid=document.getElementById('modelGrid');
+  if(!grid) return;
+  grid.innerHTML=MODELS.map(m=>`
+    <div class="model-card ${m.id===selModel?'selected':''}" data-model="${m.id}">
+      <div class="model-tag ${m.tag}">${m.tagLabel}</div>
+      <div class="model-name">${m.name}</div>
+      <div class="model-desc">${m.desc}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.model-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      selModel=card.dataset.model;
+      renderModels();
+    });
+  });
+}
+
+document.getElementById('saveModelBtn').addEventListener('click',async()=>{
+  const r=await fetch('/api/model',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({model:selModel})});
+  const d=await r.json();
+  toast(d.success?'Model güncellendi':d.error,d.success?'success':'error');
+  if(d.success)loadState();
+});
+
+// ── Prompt ───────────────────────────────────────────────
+document.getElementById('savePromptBtn').addEventListener('click',async()=>{
+  const p=document.getElementById('promptTA').value;
+  const r=await fetch('/api/prompt',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({prompt:p})});
+  const d=await r.json();
+  toast(d.success?'Prompt kaydedildi':d.error,d.success?'success':'error');
+});
+document.getElementById('resetPromptBtn').addEventListener('click',()=>{
+  document.getElementById('promptTA').value=origPrompt;
+  toast('Sıfırlandı','success');
+});
+
+// ── Kill ─────────────────────────────────────────────────
+document.getElementById('killBtn').addEventListener('click',async()=>{
+  if(!confirm('Bot\'u ANINDA durdurmak istediğinizden emin misiniz?'))return;
+  const btn=document.getElementById('killBtn');
+  btn.disabled=true;btn.textContent='Durduruluyor...';
+  await fetch('/api/kill',{method:'POST',credentials:'same-origin'}).catch(()=>{});
+  toast('Bot durduruldu.','error');
+  setTimeout(()=>location.href='/login',2000);
+});
+
+// ── Logout ───────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click',async()=>{
+  await fetch('/api/logout',{method:'POST',credentials:'same-origin'});
+  location.href='/login';
+});
+
+// ── FTP ──────────────────────────────────────────────────
+async function loadFiles(path){
+  const r=await fetch('/api/ftp/list'+(path?'?path='+encodeURIComponent(path):''),{credentials:'same-origin'});
+  const d=await r.json();
+  const tb=document.getElementById('treeBody');
+  tb.innerHTML='';
+  if(d.currentPath){
+    const up=item('..','dir',()=>loadFiles(d.currentPath.split('/').slice(0,-1).join('/')));
+    tb.appendChild(up);
+  }
+  (d.items||[]).forEach(i=>{
+    const el=item(i.name,i.type,()=>{
+      const fp=(d.currentPath?d.currentPath+'/':'')+i.name;
+      if(i.type==='dir')loadFiles(fp);
+      else openFile(fp,i.name);
+    });
+    tb.appendChild(el);
+  });
+}
+function item(name,type,onclick){
+  const el=document.createElement('div');
+  el.className='tree-item';
+  el.innerHTML=(type==='dir'
+    ?'<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'
+    :'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>')
+    +' '+name;
+  el.addEventListener('click',onclick);
+  return el;
+}
+async function openFile(path,name){
+  curFile=path;
+  const r=await fetch('/api/ftp/file?path='+encodeURIComponent(path),{credentials:'same-origin'});
+  const d=await r.json();
+  if(d.error){toast(d.error,'error');return;}
+  document.getElementById('edPath').textContent=name;
+  document.getElementById('edContent').value=d.content;
+  document.getElementById('saveFileBtn').disabled=false;
+}
+document.getElementById('saveFileBtn').addEventListener('click',async()=>{
+  if(!curFile)return;
+  const r=await fetch('/api/ftp/file',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({filePath:curFile,content:document.getElementById('edContent').value})});
+  const d=await r.json();
+  toast(d.success?'Kaydedildi':d.error,d.success?'success':'error');
+});
+
+// ── Chat WS ──────────────────────────────────────────────
+const CHAT_KEY='emk_chat_history';
+let chatHistory=[];
+
+function saveChatHistory(){
+  try{localStorage.setItem(CHAT_KEY,JSON.stringify(chatHistory.slice(-100)));}catch(e){}
+}
+function loadChatHistory(){
+  try{
+    const saved=localStorage.getItem(CHAT_KEY);
+    if(!saved)return;
+    chatHistory=JSON.parse(saved);
+    const ti=document.getElementById('typingIndicator');
+    chatHistory.forEach(m=>{
+      const el=document.createElement('div');
+      el.className='msg '+m.role;
+      el.innerHTML=`<div class="msg-av">${m.role==='user'?'SEN':'AI'}</div><div class="msg-text">${m.text}</div>`;
+      document.getElementById('chatMsgs').insertBefore(el,ti);
+    });
+    scrollChat();
+  }catch(e){}
+}
+
+function connectWS(){
+  ws=new WebSocket('ws://'+location.host+'/ws');
+  ws.onmessage=e=>{
+    const d=JSON.parse(e.data);
+    document.getElementById('typingIndicator').classList.remove('show');
+    addMsg('ai',d.content);
+    // Token sayımını güncelle
+    if(d.usage){
+      const inp=(state.totalTokens?.input||0)+d.usage.input_tokens;
+      const out=(state.totalTokens?.output||0)+d.usage.output_tokens;
+      if(!state.totalTokens) state.totalTokens={};
+      state.totalTokens.input=inp;
+      state.totalTokens.output=out;
+      const tot=inp+out;
+      document.getElementById('pillToken').textContent=fmt(tot);
+      document.getElementById('ov-input').textContent=fmt(inp);
+      document.getElementById('ov-output').textContent=fmt(out);
+      document.getElementById('ov-total').textContent=fmt(tot);
+      document.getElementById('tk-input').textContent=fmt(inp);
+      document.getElementById('tk-output').textContent=fmt(out);
+      document.getElementById('tk-total').textContent=fmt(tot);
+    }
+  };
+  ws.onclose=()=>setTimeout(connectWS,3000);
+}
+document.getElementById('chatSendBtn').addEventListener('click',sendChat);
+document.getElementById('chatInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat();}
+});
+function sendChat(){
+  const inp=document.getElementById('chatInput');
+  const msg=inp.value.trim();
+  if(!msg||!ws||ws.readyState!==1)return;
+  addMsg('user',msg);
+  ws.send(JSON.stringify({message:msg}));
+  document.getElementById('typingIndicator').classList.add('show');
+  scrollChat();
+  inp.value='';
+}
+function addMsg(role,text){
+  const ti=document.getElementById('typingIndicator');
+  const el=document.createElement('div');
+  el.className='msg '+role;
+  el.innerHTML=`<div class="msg-av">${role==='user'?'SEN':'AI'}</div><div class="msg-text">${text}</div>`;
+  document.getElementById('chatMsgs').insertBefore(el,ti);
+  chatHistory.push({role,text});
+  saveChatHistory();
+  scrollChat();
+}
+function scrollChat(){document.getElementById('chatMsgs').scrollTop=99999;}
+
+// Chat geçmişini temizle butonu
+document.addEventListener('DOMContentLoaded',()=>{
+  const chatSection=document.getElementById('s-chat');
+  const clearBtn=document.createElement('button');
+  clearBtn.className='btn-secondary';
+  clearBtn.style='position:absolute;top:10px;right:10px;font-size:11px;padding:5px 10px;';
+  clearBtn.textContent='Geçmişi Temizle';
+  clearBtn.onclick=()=>{
+    chatHistory=[];
+    localStorage.removeItem(CHAT_KEY);
+    const ti=document.getElementById('typingIndicator');
+    const msgs=document.getElementById('chatMsgs');
+    while(msgs.firstChild&&msgs.firstChild!==ti)msgs.removeChild(msgs.firstChild);
+    toast('Sohbet geçmişi temizlendi','success');
+  };
+  chatSection.style.position='relative';
+  chatSection.appendChild(clearBtn);
+});
+
+// ── Toast ────────────────────────────────────────────────
+function toast(msg,type){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='toast show '+type;
+  setTimeout(()=>el.className='toast',3000);
+}
+
+loadChatHistory();
+init();
+</script>
+</body>
+</html>
