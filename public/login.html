@@ -343,7 +343,7 @@ document.getElementById('loginForm').addEventListener('submit',async e=>{
   btn.classList.add('loading');
   err.classList.remove('show');
   try{
-    const r=await fetch('/api/login',{
+    const r=await fetch('/login',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       credentials:'same-origin',
